@@ -1,0 +1,24 @@
+#!/bin/bash
+
+# From:
+# http://stackoverflow.com/questions/59895/can-a-bash-script-tell-what-directory-its-stored-in
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+WEBPAGE=${DIR}/../docs/uberdoc.html
+OS=`uname`
+
+if [ "${OS}" == "Darwin" ]; then
+    open "${WEBPAGE}"
+else
+# xdg-open usage from:
+# http://stackoverflow.com/questions/3124556/clean-way-to-launch-the-web-browser-from-shell-script
+    XDG=`which xdg-open 2>/dev/null`
+
+    if [ -z "${XDG}" ]; then
+        echo "ERROR: Cannot find a version of xdg-open"
+        echo "       Please install 'xdg-open' and try again"
+        exit -1
+    else
+        ${XDG} "${WEBPAGE}"
+    fi
+fi

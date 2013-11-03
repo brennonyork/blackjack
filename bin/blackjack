@@ -1,0 +1,42 @@
+#!/bin/bash
+
+# From:
+# http://stackoverflow.com/questions/59895/can-a-bash-script-tell-what-directory-its-stored-in
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+LEIN=${DIR}/../resources/lein
+OS=`uname`
+BLACKJACK_VERSION=2.0.0
+EXECUTABLE=${DIR}/../target/blackjack-${BLACKJACK_VERSION}-standalone.jar
+
+EXEC_BLACKJACK=
+
+bootstrap() {
+    chmod 755 ${LEIN}
+    ${LEIN} do clean, deps, compile, uberjar
+
+    if [ "${OS}" == "Darwin" ]; then
+        sed -i '.bak' 's/EXEC_BLACKJACK=/EXEC_BLACKJACK=1/1' ${DIR}/blackjack
+        rm -f ${DIR}/blackjack.bak
+    else
+        sed -i 's/EXEC_BLACKJACK=/EXEC_BLACKJACK=1/1' ${DIR}/blackjack
+    fi
+}
+
+if [ -z "`which java 2>/dev/null`" ]; then
+    echo "ERROR: No java executable found"
+    echo "       Please install 'java' and try again"
+    exit -1
+fi
+
+if [ -z "${EXEC_BLACKJACK}" ]; then
+    bootstrap
+fi
+
+if [ -f ${EXECUTABLE} ]; then
+    java -jar ${EXECUTABLE}
+else
+    echo "ERROR: Failure in build process"
+    echo "       Attempt manual Leiningen build through ./resources/lein"
+    exit -1
+fi
